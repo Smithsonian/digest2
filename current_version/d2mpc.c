@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include "digest2.h"
 #include <math.h>
-#define OCD_URL "http://www.minorplanetcenter.net/iau/lists/ObsCodes.html"
+#define OCD_URL "https://minorplanetcenter.net/iau/lists/ObsCodes.html"
 
 // functions
 //-----------------------------------------------------------------------------

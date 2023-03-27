@@ -141,11 +141,21 @@ void mustReadOCD(void)
 
 _Bool getOCD()
 {
+  FILE *fp = fopen (fnOCD, "r");
+  if (fp)
+    {
+      fclose (fp);
+      return false;
+      }
+  else
+    {
   sprintf(line, "curl %s -o %s", OCD_URL, CPspec(fnOCD, ocdSpec));
   if (system(line) != 0) {
     fprintf(stderr, msgAccess, OCD_URL);
     return false;
   }
+    return true;
+    }
   return true;
 }
 

@@ -93,7 +93,7 @@ double updateMagnitude(char band, double mag){
                 mag += 0.32;
                 break;
             case 'z':
-                mag + 0.26;
+                mag += 0.26;
                 break;
             case 'I':
                 mag += 0.8;

@@ -1,7 +1,14 @@
 # Digest2
 
-Current version: 0.19.2, updated Oct. 7, 2021 by Peter Veres.
-Changes: d2mpc.c - added band conversion for 'u', added CMOS 'B'
+Current version: 0.19.3, updated Mar. 26, 2023 by Peter Veres, with suggestions by Alex Gibbs
+
+bugfix in d2mpc.c: z-band conversion had a typo, '=' was missing
+outdated URL address for obscodes updated in d2mpc.c (old ULR did not work, might cause an issue and replace the local file with a generated URL text)
+
+a potential functionality issue: if the observation input file is missing, and if the -m and -c options are provided, then those files could be replaced.
+updated d2modelio.c - function writeModel() and d2mpc.c - function getOCD() were changed: if the files exist, do not replace them if the observations input file is missing.
+Note, that usage without obs input file is possible: ./digest2 -m is used to generate the model. This would work but only if the output .model file is not present.
+
 
 Digest2 uses statistical ranging techniques to compute chances that an
 object is of various orbit classes, including Near Earth Objects, or NEOs.

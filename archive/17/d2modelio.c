@@ -1,6 +1,9 @@
 // d2modelio.c
 //
+
 // Public domain.
+
+//Updated: Mar. 26, 2023 by P. Veres: do not overwrite the model file if it exists: only create new model if the file does not exist
 
 // posix source added for fileno()
 #define _POSIX_SOURCE
@@ -140,6 +143,13 @@ void mustReadCSV(struct stat *buf)
 
 void writeModel(struct stat *csv)
 {
+  FILE *fp = fopen (fnModel, "r");
+   if (fp)
+     {
+        fclose (fp);
+	}
+   else
+     {
   FILE *fmod = openCP(fnModel, modelSpec, "w");
   if (!fmod ||
       !fwrite(&csv->st_size, sizeof(csv->st_size), 1, fmod) ||
@@ -152,6 +162,7 @@ void writeModel(struct stat *csv)
     printf(msgWrite, fnModel);
   }
   fclose(fmod);
+     }
 }
 
 _Bool readArrays(FILE * fmod)

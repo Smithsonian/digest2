@@ -1,7 +1,7 @@
 // d2mpc.c
 //
 //
-// Update Oct. 7, 2021: added band conversion 'u' and CMOS 'B', by Peter Veres
+// Updated Mar. 26, 2023 by P. Veres: bugfixes: typo for mag+0.26 and OCD_URL and do not overwrite the file with the obscodes if the file exists
 // Public domain.
 
 #include <ctype.h>
@@ -13,7 +13,7 @@
 
 #include "digest2.h"
 
-#define OCD_URL "http://www.minorplanetcenter.net/iau/lists/ObsCodes.html"
+#define OCD_URL "https://minorplanetcenter.net/iau/lists/ObsCodes.html"
 
 // functions
 //-----------------------------------------------------------------------------
@@ -142,11 +142,21 @@ void mustReadOCD(void)
 
 _Bool getOCD()
 {
+  FILE *fp = fopen (fnOCD, "r");
+  if (fp)
+    {
+      fclose (fp);
+      return false;
+      }
+  else
+    {
   sprintf(line, "curl %s -o %s", OCD_URL, CPspec(fnOCD, ocdSpec));
   if (system(line) != 0) {
     fprintf(stderr, msgAccess, OCD_URL);
     return false;
   }
+  return true;
+    }
   return true;
 }
 
@@ -252,7 +262,7 @@ _Bool parseMpc80(char *line, observation * obsp)
         mag +=0.32;
         break;
     case 'z':
-        mag +0.26;
+        mag +=0.26;
         break;
     case 'I':
         mag +=0.8;

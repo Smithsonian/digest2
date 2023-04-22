@@ -230,7 +230,8 @@ tracklet *parse_nodes(xmlXPathObjectPtr optical_nodes) {
 
         if (pGood) {
             if (tk == NULL || tk->status == INVALID || strcmp((char *) opt->trkSub, tk->desig)) {
-                if(tk != NULL) eval(tk);
+                if(tk != NULL)
+                    eval(tk);
                 tk = resetValid((char *) opt->trkSub, &obs1);
                 tk->isAdes = 1;
             } else {
@@ -242,6 +243,7 @@ tracklet *parse_nodes(xmlXPathObjectPtr optical_nodes) {
         } else {
             eval(tk);
             tk = resetInvalid();
+            tk->isAdes = 1;
         }
         i++;
 

@@ -114,8 +114,7 @@ typedef struct {
   _Bool dTag[QX][EX][IX][HX];
 
   double rmsPrime;
-  int isAdes;
-
+  _Bool isAdes;
   perClass *class;              // array, extent = nClassesComputed
 } tracklet;
 
@@ -173,7 +172,6 @@ extern regex_t rxObsErr;
 extern regex_t rxLimit;
 extern int cores;
 extern int limit;
-extern int usingAdes;
 void fatal(char *msg);
 void fatal1(char *msg, char *arg);
 
@@ -182,7 +180,7 @@ extern _Bool modelSpec;
 extern _Bool ocdSpec;
 extern _Bool classPossible;
 extern _Bool raw, noid;
-extern _Bool headings, rms, repeatable, rmsPrime;
+extern _Bool headings, rms, repeatable, rmsPrime, useThreshold;
 extern _Bool limitSpec;
 extern _Bool limitRaw;
 extern int nClassCompute;
@@ -190,8 +188,7 @@ extern int nClassColumns;
 extern int classCompute[D2CLASSES];
 extern int classColumn[D2CLASSES];
 extern int limitClass;
-//extern char *fnAdes;
-//extern _Bool usingAdes;
+
 // functions in d2cli.c
 char *CPspec(char *fn, _Bool spec);
 FILE *openCP(char *fn, _Bool spec, char *mode);

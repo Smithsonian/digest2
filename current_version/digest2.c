@@ -23,9 +23,8 @@ tracklet *stage;                // staging for tracklet to be scored
 tracklet **ring;                // ring data structure
 int ringFree;                   // number of free trackets
 int ringNext;                   // index of next free tracklet
-int usingAdes;
 
-//int usingAdes;
+
 // deadlock avoidance:
 // a thread holding one never asks for the other.
 pthread_mutex_t mStage = PTHREAD_MUTEX_INITIALIZER;
@@ -172,7 +171,7 @@ void eval(tracklet *tk) {
 
     if (tk->isAdes) {
         // NOTE: RICHARD
-        // When using ADES, we don't need to do any of the insane string manipulation.
+        // When using ADES, we don't need to do any of the string manipulation.
         // NOTE: isAdes is used in fmtScores(), too, so that the desig is not truncated...
     } else {
         // working with 12 character designation field was expedient so far.
@@ -262,11 +261,7 @@ void fmtScores_rich(tracklet *tk) {
     char noIdScore[100];
     char pScoreStr[100];
 
-    if(strcmp(tk->desig, "00Fo92C") == 0){
-        printf("Found it!\n");
-    }
-
-    strcat(message, strtok(tk->desig, " "));
+    strcat(message, strtok(tk->desig, ""));
 
     if (rms) {
         snprintf(rmsStr, sizeof(rmsStr), "%5.2f", tk->rms);
@@ -437,8 +432,9 @@ void *scoreStaged(void *id) {
 
 void readAdes(char *fnObs) {
 
-    tracklet *tk = parse_ades(fnObs);
 
+    tracklet *tk = parse_ades(fnObs);
+    tk->isAdes = 1;
 
     eval(tk);
 
@@ -580,6 +576,7 @@ void setup(char *fnObs) {
     headings = 1;
     rms = 1;
     rmsPrime = 0;
+//    useThreshold = 0;
     raw = 0;
     noid = 1;
 
@@ -692,11 +689,11 @@ int main(int argc, char **argv) {
     // sets up globals and terminates on error
     char *fnObs = parseCl(argc, argv);
     char *extension = strrchr(fnObs, '.') + 1;
-    usingAdes = strcmp(extension, "xml");
+//    xml = strcmp(extension, "xml");
 
     setup(fnObs);
 
-    if (usingAdes == 0) {
+    if (strcmp(extension, "xml") == 0) {
         readAdes(fnObs);
     } else {
         readMPC80(fnObs);

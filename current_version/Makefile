@@ -1,14 +1,23 @@
-# Public domain.
+CC = gcc
+CFLAGS = -std=c99 -ggdb -pthread -I/usr/include/libxml2
+LDFLAGS = -lm -lxml2
+SRC = digest2.c d2cli.c d2math.c d2model.c d2modelio.c d2mpc.c d2ades.c common.c
+OBJ = $(SRC:.c=.o)
+EXEC = digest2
 
-d2src = digest2.c d2cli.c d2math.c d2model.c d2modelio.c d2mpc.c d2ades.c common.c
+all: $(EXEC)
 
-digest2: Makefile $(d2src) digest2.h d2model.h
-	gcc -ggdb -o digest2 -std=c99 -pthread $(d2src) -lm -lxml2
+$(EXEC): $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-# indent options in .indent.pro
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJ) $(EXEC)
+
 indent:
 	indent *.c *.h
 	rm *.c~ *.h~
 
-
-
+.PHONY: all clean indent

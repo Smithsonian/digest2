@@ -309,44 +309,127 @@ void clearDTags(tracklet *tk) {
     } while (c < nClassCompute);
 }
 
-void offsetMotionVector(tracklet *tk, int rx, int dx) {
+void updateRMSValues(double *rmsRA, double *rmsDec, double *errorFromConfig) {
 
-//    check if tk->obsPair[i].rmsDec not zero
+    // Note: There is no such thing as
+    // if errorFromConfig is zero/missing, set it to 1.0
+    if (!*errorFromConfig) *errorFromConfig = 1.0;
+
+    // if rmsRa and rmsDec is zero, set them both to errorFromConfig
+    if (!*rmsRA && !*rmsDec) *rmsRA = *rmsDec = *errorFromConfig;
+
+    // Otherwise, rmsRA and rmsDec are not zero/missing..., so do checks
+    else {
+
+        // if rmsRa or rmsDec is zero, set them to the other
+        if (!*rmsRA) *rmsRA = *rmsDec;
+        if (!*rmsDec) *rmsDec = *rmsRA;
+
+        if(useThreshold){
+
+            double minThreshold = 0.7 * (*errorFromConfig);
+            double maxThreshold = 5 * (*errorFromConfig);
+
+            // if rmsRa or rmsDec is less than minThreshold, set them to minThreshold
+            if (*rmsRA < minThreshold) *rmsRA = minThreshold;
+            if (*rmsDec < minThreshold) *rmsDec = minThreshold;
+
+            // if rmsRa or rmsDec is greater than maxThreshold, set them to maxThreshold
+            if (*rmsRA > maxThreshold) *rmsRA = maxThreshold;
+            if (*rmsDec > maxThreshold) *rmsDec = maxThreshold;
+
+        }
+    }
+
+}
+
+
+//void offsetMotionVector(tracklet *tk, int rx, int dx) {
+//
+////    check if tk->obsPair[i].rmsDec not zero
+//    // solve unit vectors
+//    double v[3];
+//    observation *obsp = tk->obsPair;
+////    tk->obsErr[0] = tk->obsPair[0].rmsDec;
+////    tk->obsErr[1] = tk->obsPair[1].rmsDec;
+//    for (int i = 0; i < 2; i++, obsp++) {
+//        // observer-object unit vectors in ecliptic coordinates
+//        double vv = dx * tk->obsErr[i] * .5;
+//
+////        double dec = obsp->dec + dx * tk->obsErr[i] * .5;
+////        double cosdec = cos(dec);
+////        double ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
+//
+//        double ades_rmsDec = tk->obsPair[i].rmsDec;
+//        double ades_rmsRa = tk->obsPair[i].rmsRA;
+//        double dec = 0;
+//        double ra = 0;
+//        double cosdec = 0;
+//
+//        if(usingAdes){
+//
+//            double oe = tk->obsErr[0]/arcsecrad;
+//            double threshold = 0.7 * oe;
+//
+//            process_values(&ades_rmsRa, &ades_rmsDec, &oe, threshold);
+//
+//        }else{
+//
+//        }
+//
+//        if ((ades_rmsDec == 0 && ades_rmsRa == 0) ||
+//            (ades_rmsDec < 0 || ades_rmsRa < 0) ||
+//            (ades_rmsDec > 2 || ades_rmsRa > 2)) {
+//            dec = obsp->dec + dx * tk->obsErr[i] * .5;
+//            cosdec = cos(dec);
+//            ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
+//        } else {
+//            if (ades_rmsDec > 0 && ades_rmsRa == 0) {
+//                ades_rmsRa = ades_rmsDec;
+//            } else if (ades_rmsRa > 0 && ades_rmsDec == 0) {
+//                ades_rmsDec = ades_rmsRa;
+//            }
+//            dec = obsp->dec + dx * tk->obsPair[i].rmsDec * .5;
+//            cosdec = cos(dec);
+//            ra = obsp->ra + rx * tk->obsPair[i].rmsRA * .5 * cosdec;
+//        }
+//
+//        v[0] = cos(ra) * cosdec;
+//        v[1] = sin(ra) * cosdec;
+//        v[2] = sin(dec);
+//        ecRotate(v, tk->soe, tk->coe);
+//        memcpy(tk->observer_object_unit[i], v, sizeof(v));
+//        rx = -rx;
+//        dx = -dx;
+//    }
+//}
+
+void offsetMotionVector(tracklet * tk, int rx, int dx)
+{
     // solve unit vectors
     double v[3];
     observation *obsp = tk->obsPair;
-//    tk->obsErr[0] = tk->obsPair[0].rmsDec;
-//    tk->obsErr[1] = tk->obsPair[1].rmsDec;
+
     for (int i = 0; i < 2; i++, obsp++) {
-        // observer-object unit vectors in ecliptic coordinates
-        double vv = dx * tk->obsErr[i] * .5;
 
-//        double dec = obsp->dec + dx * tk->obsErr[i] * .5;
-//        double cosdec = cos(dec);
-//        double ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
-
-        double ades_rmsDec = tk->obsPair[i].rmsDec;
-        double ades_rmsRa = tk->obsPair[i].rmsRA;
         double dec = 0;
         double ra = 0;
         double cosdec = 0;
+        double errorFromConfig = tk->obsErr[i]/arcsecrad;
 
-        if ((ades_rmsDec == 0 && ades_rmsRa == 0) ||
-            (ades_rmsDec < 0 || ades_rmsRa < 0) ||
-            (ades_rmsDec > 2 || ades_rmsRa > 2)) {
-            dec = obsp->dec + dx * tk->obsErr[i] * .5;
-            cosdec = cos(dec);
-            ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
-        } else {
-            if (ades_rmsDec > 0 && ades_rmsRa == 0) {
-                ades_rmsRa = ades_rmsDec;
-            } else if (ades_rmsRa > 0 && ades_rmsDec == 0) {
-                ades_rmsDec = ades_rmsRa;
-            }
+        // If we are using ADES, we want to use the rmsRA and rmsDec values
+        if(tk->isAdes){
+
+            updateRMSValues(&tk->obsPair[i].rmsRA, &tk->obsPair[i].rmsDec, &errorFromConfig);
             dec = obsp->dec + dx * tk->obsPair[i].rmsDec * .5;
-            cosdec = cos(dec);
             ra = obsp->ra + rx * tk->obsPair[i].rmsRA * .5 * cosdec;
+
+        }else{ // Otherwise, we are using MPC obs and continue as normal
+            dec = obsp->dec + dx * tk->obsErr[i] * .5;
+            ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
         }
+
+        cosdec = cos(dec);
 
         v[0] = cos(ra) * cosdec;
         v[1] = sin(ra) * cosdec;

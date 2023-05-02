@@ -169,6 +169,11 @@ _Bool processOptical(opticalPtr optical, observation *obsp) {
     obsp->rmsRA = (optical->rmsRA != NULL) ? strtod((char *) optical->rmsRA, 0) : 0;
     obsp->rmsDec = (optical->rmsDec != NULL) ? strtod((char *) optical->rmsDec, 0) : 0;
 
+//    obsp->rmsRA = convert_ra_or_dec_to_radians(obsp->rmsRA);
+//    obsp->rmsDec = convert_ra_or_dec_to_radians(obsp->rmsDec);
+    obsp->rmsRA = obsp->rmsRA * arcsecrad;
+    obsp->rmsDec = obsp->rmsDec * arcsecrad;
+
     // SATELLITE or ROVING
     if(optical->pos1 != NULL && optical->pos2 != NULL && optical->pos3 != NULL && optical->sys != NULL){
 

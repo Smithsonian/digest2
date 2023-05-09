@@ -261,7 +261,14 @@ void fmtScores_rich(tracklet *tk) {
     char noIdScore[100];
     char pScoreStr[100];
 
-    strcat(message, strtok(tk->desig, ""));
+    if(tk->isAdes) {
+        strcat(message, strtok(tk->desig, ""));
+    }
+    else {
+        //remove the first 5 characters from the desig:
+        char *desig = tk->desig + 5;
+        strcat(message, strtok(desig, ""));
+    }
 
     if (rms) {
         snprintf(rmsStr, sizeof(rmsStr), "%5.2f", tk->rms);
@@ -336,6 +343,7 @@ void fmtScores(tracklet *tk) {
     }
     // build line for atomic write and print results.
     int len = 0;
+    outputLineSize = outputLineSize + 10;
     if (tk->isAdes) {
         len = snprintf(outputLine, outputLineSize, "%s", tk->desig);
     } else {
@@ -423,8 +431,8 @@ void *scoreStaged(void *id) {
             tk->rand64 = 3;
 
         score(tk);
-//        fmtScores(tk);
-        fmtScores_rich(tk);
+        fmtScores(tk);
+//        fmtScores_rich(tk);
         ringAdd(tk);
     }
     return NULL;

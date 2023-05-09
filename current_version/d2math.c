@@ -311,7 +311,6 @@ void clearDTags(tracklet *tk) {
 
 void updateRMSValues(double *rmsRA, double *rmsDec, double *errorFromConfig) {
 
-    // Note: There is no such thing as
     // if errorFromConfig is zero/missing, set it to 1.0
     if (!*errorFromConfig) *errorFromConfig = 1.0;
 
@@ -343,67 +342,6 @@ void updateRMSValues(double *rmsRA, double *rmsDec, double *errorFromConfig) {
 
 }
 
-
-//void offsetMotionVector(tracklet *tk, int rx, int dx) {
-//
-////    check if tk->obsPair[i].rmsDec not zero
-//    // solve unit vectors
-//    double v[3];
-//    observation *obsp = tk->obsPair;
-////    tk->obsErr[0] = tk->obsPair[0].rmsDec;
-////    tk->obsErr[1] = tk->obsPair[1].rmsDec;
-//    for (int i = 0; i < 2; i++, obsp++) {
-//        // observer-object unit vectors in ecliptic coordinates
-//        double vv = dx * tk->obsErr[i] * .5;
-//
-////        double dec = obsp->dec + dx * tk->obsErr[i] * .5;
-////        double cosdec = cos(dec);
-////        double ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
-//
-//        double ades_rmsDec = tk->obsPair[i].rmsDec;
-//        double ades_rmsRa = tk->obsPair[i].rmsRA;
-//        double dec = 0;
-//        double ra = 0;
-//        double cosdec = 0;
-//
-//        if(usingAdes){
-//
-//            double oe = tk->obsErr[0]/arcsecrad;
-//            double threshold = 0.7 * oe;
-//
-//            process_values(&ades_rmsRa, &ades_rmsDec, &oe, threshold);
-//
-//        }else{
-//
-//        }
-//
-//        if ((ades_rmsDec == 0 && ades_rmsRa == 0) ||
-//            (ades_rmsDec < 0 || ades_rmsRa < 0) ||
-//            (ades_rmsDec > 2 || ades_rmsRa > 2)) {
-//            dec = obsp->dec + dx * tk->obsErr[i] * .5;
-//            cosdec = cos(dec);
-//            ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
-//        } else {
-//            if (ades_rmsDec > 0 && ades_rmsRa == 0) {
-//                ades_rmsRa = ades_rmsDec;
-//            } else if (ades_rmsRa > 0 && ades_rmsDec == 0) {
-//                ades_rmsDec = ades_rmsRa;
-//            }
-//            dec = obsp->dec + dx * tk->obsPair[i].rmsDec * .5;
-//            cosdec = cos(dec);
-//            ra = obsp->ra + rx * tk->obsPair[i].rmsRA * .5 * cosdec;
-//        }
-//
-//        v[0] = cos(ra) * cosdec;
-//        v[1] = sin(ra) * cosdec;
-//        v[2] = sin(dec);
-//        ecRotate(v, tk->soe, tk->coe);
-//        memcpy(tk->observer_object_unit[i], v, sizeof(v));
-//        rx = -rx;
-//        dx = -dx;
-//    }
-//}
-
 void offsetMotionVector(tracklet * tk, int rx, int dx)
 {
     // solve unit vectors
@@ -415,15 +353,15 @@ void offsetMotionVector(tracklet * tk, int rx, int dx)
         double dec = 0;
         double ra = 0;
         double cosdec = 0;
-        double errorFromConfig = tk->obsErr[i]/arcsecrad;
+        double errorFromConfig = tk->obsErr[i];
 
         // If we are using ADES, we want to use the rmsRA and rmsDec values
         if(tk->isAdes){
-
-            updateRMSValues(&tk->obsPair[i].rmsRA, &tk->obsPair[i].rmsDec, &errorFromConfig);
-            dec = obsp->dec + dx * tk->obsPair[i].rmsDec * .5;
-            ra = obsp->ra + rx * tk->obsPair[i].rmsRA * .5 * cosdec;
-
+            double rmsRA = tk->obsPair[i].rmsRA;
+            double rmsDec = tk->obsPair[i].rmsDec;
+            updateRMSValues(&rmsRA, &rmsDec, &errorFromConfig);
+            dec = obsp->dec + dx * rmsDec * .5;
+            ra = obsp->ra + rx * rmsRA * .5 * cosdec;
         }else{ // Otherwise, we are using MPC obs and continue as normal
             dec = obsp->dec + dx * tk->obsErr[i] * .5;
             ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
@@ -884,8 +822,6 @@ double gcRmsRes(gcfparam *gcf, double res[gcf->nObs][2]) {
     double s = 0;
     for (int i = 0; i < nObs; i++)
         s += res[i][0] * res[i][0] + res[i][1] * res[i][1];
-//        printf("The value of 0 is: %d\n", res[i][0]);
-//        printf("The value of 1 is: %d\n", res[i][1]);
     return sqrt(s / nObs);
 }
 
@@ -899,17 +835,23 @@ double gcRms(gcfparam *gcf) {
     return gcRmsRes(gcf, res);
 }
 
-//TODO: write function to calulate RMS prime, based on the uncertainties provided by ADES
 double gcRmsPrimeAdes(tracklet *tk) {
 
     double s = 0;
-    for (int i = 0; i < tk->lines; i++)
-        s += tk->olist[i].rmsRA * tk->olist[i].rmsRA + tk->olist[i].rmsDec * tk->olist[i].rmsDec;
+    double rmsRA = 0.0;
+    double rmsDec = 0.0;
+
+    for (int i = 0; i < tk->lines; i++) {
+        // TODO Peter check
+        rmsDec = tk->olist[i].rmsDec / arcsecrad;
+        rmsRA = tk->olist[i].rmsRA / arcsecrad;
+        s += rmsRA * rmsRA + rmsDec * rmsDec;
+    }
     return sqrt(s / tk->lines);
 }
 
 double gcRmsPrimeMPC(tracklet *tk) {
-
+    //TODO Peter check
     double s = 0;
     double er = tk->obsErr[0];
     er = er / arcsecrad;
@@ -1209,9 +1151,6 @@ void score(tracklet *tk) {
     observation *obsp = tk->obsPair;
     for (int i = 0; i < 2; i++, obsp++) {
         site *sitep = siteTable + obsp->site;
-
-        if(tk->obsPair)
-
         tk->obsErr[i] = clipErr(rms[i], sitep);
 
         double sun_earth[3];
@@ -1237,10 +1176,11 @@ void score(tracklet *tk) {
     searchDistance(tk, MAX_DISTANCE);
     dRange(tk, MIN_DISTANCE, MAX_DISTANCE, 0);
 
-
-    tk->rmsPrime = gcRmsPrimeAdes(tk);
-    if(tk->rmsPrime == 0)
-        tk->rmsPrime = gcRmsPrimeMPC(tk);
+    if (tk->isAdes) {
+        tk->rmsPrime = gcRmsPrimeAdes(tk);
+        if (tk->rmsPrime == 0)
+            tk->rmsPrime = gcRmsPrimeMPC(tk);
+    }
 
 
 

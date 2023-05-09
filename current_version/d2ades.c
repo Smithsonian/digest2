@@ -43,8 +43,15 @@ static opticalPtr parse_optical(xmlNodePtr cur) {
             ret->trkSub = xmlNodeGetContent(cur);
         if ((!xmlStrcmp(cur->name, (const xmlChar *) "obsID")))
             ret->obsID = xmlNodeGetContent(cur);
-        if ((!xmlStrcmp(cur->name, (const xmlChar *) "trkID")))
+        if ((!xmlStrcmp(cur->name, (const xmlChar *) "trkID"))) {
             ret->trkID = xmlNodeGetContent(cur);
+            int numToRemove = 3;
+            int trkIDLen = strlen(ret->trkID);
+            if (trkIDLen > numToRemove) {
+                memmove(ret->trkID, ret->trkID + numToRemove,
+                        trkIDLen - numToRemove + 1); // +1 to include the null terminator
+            }
+        }
         if ((!xmlStrcmp(cur->name, (const xmlChar *) "mode")))
             ret->mode = xmlNodeGetContent(cur);
         if ((!xmlStrcmp(cur->name, (const xmlChar *) "stn")))
@@ -169,10 +176,9 @@ _Bool processOptical(opticalPtr optical, observation *obsp) {
     obsp->rmsRA = (optical->rmsRA != NULL) ? strtod((char *) optical->rmsRA, 0) : 0;
     obsp->rmsDec = (optical->rmsDec != NULL) ? strtod((char *) optical->rmsDec, 0) : 0;
 
-//    obsp->rmsRA = convert_ra_or_dec_to_radians(obsp->rmsRA);
-//    obsp->rmsDec = convert_ra_or_dec_to_radians(obsp->rmsDec);
-    obsp->rmsRA = obsp->rmsRA * arcsecrad;
+    obsp->rmsRA = obsp->rmsRA  * arcsecrad;
     obsp->rmsDec = obsp->rmsDec * arcsecrad;
+
 
     // SATELLITE or ROVING
     if(optical->pos1 != NULL && optical->pos2 != NULL && optical->pos3 != NULL && optical->sys != NULL){
@@ -234,13 +240,13 @@ tracklet *parse_nodes(xmlXPathObjectPtr optical_nodes) {
         _Bool pGood = processOptical(opt, &obs1);
 
         if (pGood) {
-            if (tk == NULL || tk->status == INVALID || strcmp((char *) opt->trkSub, tk->desig)) {
+            if (tk == NULL || tk->status == INVALID || strcmp((char *) opt->trkID, tk->desig)) {
                 if(tk != NULL)
                     eval(tk);
-                tk = resetValid((char *) opt->trkSub, &obs1);
+                tk = resetValid((char *) opt->trkID, &obs1);
                 tk->isAdes = 1;
             } else {
-                continueValid(tk, (char *) opt->trkSub, &obs1);
+                continueValid(tk, (char *) opt->trkID, &obs1);
             }
         } else if (tk == NULL || tk->status == INVALID) {
             if(tk == NULL) tk = resetInvalid();

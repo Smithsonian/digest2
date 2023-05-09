@@ -136,6 +136,57 @@ double convert_to_modified_julian_date(const char* iso_string) {
     return (double)(t / 86400.0) + 40587.0;
 }
 
+double get_mjd(const char* iso_string){
+    int year, month;
+    double day, hours, minutes, seconds;
+
+    sscanf(iso_string, "%d-%d-%lfT%lf:%lf:%lfZ", &year, &month, &day, &hours, &minutes, &seconds);
+
+    double day_fraction = (hours * 3600 + minutes * 60 + seconds) / 86400;
+    day += day_fraction;
+
+    static int flookup[] =
+            { 0, 306, 337, 0, 31, 61, 92, 122, 153, 184, 214, 245, 275 };
+
+    int z = year + (month - 14) / 12;
+    int m = flookup[month] + 365 * z + z / 4 - z / 100 + z / 400 - 678882;
+    return m + day;
+}
+
+void ra_to_hms(double ra_deg, double *hours, double *minutes, double *seconds) {
+    double ra_hours = ra_deg / 15;
+
+    *hours = (int)ra_hours; // Extract the whole hours
+    double remaining_minutes = (ra_hours - *hours) * 60;
+
+    *minutes = (int)remaining_minutes; // Extract the whole minutes
+    *seconds = (remaining_minutes - *minutes) * 60; // Calculate the remaining seconds
+}
+
+void dec_to_dms(double dec_deg, double *degrees, double *arcminutes, double *arcseconds) {
+    *degrees = (int)dec_deg; // Extract the whole degrees
+    double remaining_arcminutes = fabs(dec_deg - *degrees) * 60;
+
+    *arcminutes = (int)remaining_arcminutes; // Extract the whole arcminutes
+    *arcseconds = (remaining_arcminutes - *arcminutes) * 60; // Calculate the remaining arcseconds
+}
+
+double compute_ra(double ra_deg){
+    double hours, minutes, seconds;
+    ra_to_hms(ra_deg, &hours, &minutes, &seconds);
+    double ra = hours*15+minutes*15/60+seconds*15/3600;
+    return ra* M_PI/180;
+//    return ((hours * 60 + minutes) * 60 + seconds) * M_PI / (12 * 3600);
+}
+
+double compute_dec(double dec_deg){
+    double degrees, arcminutes, arcseconds;
+    dec_to_dms(dec_deg, &degrees, &arcminutes, &arcseconds);
+    double dec = degrees+arcminutes/60+arcseconds/3600;
+    return dec* M_PI/180;
+//    return ((degrees * 60 + arcminutes) * 60 + arcseconds) * M_PI / (180 * 3600);
+}
+
 /**
 * @brief Processes an optical observation and stores the relevant information in an observation struct.
 * @param optical A pointer to an opticalPtr struct that holds the optical observation data.
@@ -151,13 +202,14 @@ _Bool processOptical(opticalPtr optical, observation *obsp) {
 
     // parse the date and time and convert to MJD
     const char* datetime = (const char*) optical->obsTime;
-    obsp->mjd = convert_to_modified_julian_date(datetime);
+    // obsp->mjd = convert_to_modified_julian_date(datetime);
+    obsp->mjd = get_mjd(datetime);
 
     double ra = strtod((char *) optical->ra, NULL);
-    ra = convert_ra_or_dec_to_radians(ra);
+    ra = compute_ra(ra);
 
     double dec = strtod((char *) optical->dec, NULL);
-    dec = convert_ra_or_dec_to_radians(dec);
+    dec = compute_dec(dec);
 
     obsp->ra = ra;
     obsp->dec = dec;

@@ -292,13 +292,13 @@ tracklet *parse_nodes(xmlXPathObjectPtr optical_nodes) {
         _Bool pGood = processOptical(opt, &obs1);
 
         if (pGood) {
-            if (tk == NULL || tk->status == INVALID || strcmp((char *) opt->trkID, tk->desig)) {
+            if (tk == NULL || tk->status == INVALID || strcmp((char *) opt->trkSub, tk->desig)) {
                 if(tk != NULL)
                     eval(tk);
-                tk = resetValid((char *) opt->trkID, &obs1);
+                tk = resetValid((char *) opt->trkSub, &obs1);
                 tk->isAdes = 1;
             } else {
-                continueValid(tk, (char *) opt->trkID, &obs1);
+                continueValid(tk, (char *) opt->trkSub, &obs1);
             }
         } else if (tk == NULL || tk->status == INVALID) {
             if(tk == NULL) tk = resetInvalid();

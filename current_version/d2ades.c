@@ -164,11 +164,20 @@ void ra_to_hms(double ra_deg, double *hours, double *minutes, double *seconds) {
 }
 
 void dec_to_dms(double dec_deg, double *degrees, double *arcminutes, double *arcseconds) {
+
     *degrees = (int)dec_deg; // Extract the whole degrees
+
     double remaining_arcminutes = fabs(dec_deg - *degrees) * 60;
 
     *arcminutes = (int)remaining_arcminutes; // Extract the whole arcminutes
     *arcseconds = (remaining_arcminutes - *arcminutes) * 60; // Calculate the remaining arcseconds
+
+    // if dec_deg is less than 0, then the degrees, arcminutes and arcseconds should be negative
+    if (dec_deg < 0) {
+        *degrees = -*degrees;
+        *arcminutes = -*arcminutes;
+        *arcseconds = -*arcseconds;
+    }
 }
 
 double compute_ra(double ra_deg){
@@ -210,6 +219,7 @@ _Bool processOptical(opticalPtr optical, observation *obsp) {
 
     double dec = strtod((char *) optical->dec, NULL);
     dec = compute_dec(dec);
+
 
     obsp->ra = ra;
     obsp->dec = dec;

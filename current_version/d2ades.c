@@ -174,7 +174,6 @@ void dec_to_dms(double dec_deg, double *degrees, double *arcminutes, double *arc
 
     // if dec_deg is less than 0, then the degrees, arcminutes and arcseconds should be negative
     if (dec_deg < 0) {
-        *degrees = -*degrees;
         *arcminutes = -*arcminutes;
         *arcseconds = -*arcseconds;
     }

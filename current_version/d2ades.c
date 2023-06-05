@@ -214,11 +214,12 @@ _Bool processOptical(opticalPtr optical, observation *obsp) {
     obsp->mjd = get_mjd(datetime);
 
     double ra = strtod((char *) optical->ra, NULL);
-    ra = compute_ra(ra);
+//    ra = compute_ra(ra);
+    ra = ra * M_PI / 180;
 
     double dec = strtod((char *) optical->dec, NULL);
-    dec = compute_dec(dec);
-
+//    dec = compute_dec(dec);
+    dec = dec * M_PI / 180;
 
     obsp->ra = ra;
     obsp->dec = dec;

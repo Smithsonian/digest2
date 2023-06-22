@@ -1,67 +1,67 @@
 # Digest2 operation, including installation and configuration
-Digest2 version 0.19
+Digest2 version 0.19.3
 
 ## Basic operation
 
-"Initial program checkout" in BUILDING.md used this example data,
+Having built digest2 (see [BUILDING.md](BUILDING.md), you should have a `digest2` executable in the current directory.
+Make sure that you also have the `digest2.model.csv`, `digest2.model`, and `MPC.config` files in the current directory.
+If you have internet connection `digest2` will download the latest observatory parallax data from the Minor Planet Center.
+If no internet connection is available, you will need to download the `obscode.dat` file from the Minor Planet Center and place it in the current directory with the name `digest2.obscodes`.
 
-```
-     NE00030  C2004 09 16.15206 16 13 11.57 +20 52 23.7          21.1 Vd     291
-     NE00030  C2004 09 16.15621 16 13 11.34 +20 52 16.8          20.8 Vd     291
-     NE00030  C2004 09 16.16017 16 13 11.13 +20 52 09.6          20.7 Vd     291
-     NE00199  C2007 02 09.24234 06 08 06.06 +43 13 26.2          20.1  c     704
-     NE00199  C2007 02 09.25415 06 08 05.51 +43 13 01.7          20.1  c     704
-     NE00199  C2007 02 09.26683 06 08 04.80 +43 12 37.5          19.9  c     704
-     NE00269  C2003 01 06.51893 12 40 50.09 +18 27 46.9          21.4 Vd     291
-     NE00269  C2003 01 06.52850 12 40 50.71 +18 27 46.1          21.8 Vd     291
-     NE00269  C2003 01 06.54359 12 40 51.68 +18 27 42.5          21.9 Vd     291
-```
+You should now be able to run digest2. For this, we have provided two sample files: one in MPC format (`sample.obs`), and one in ADES format (`sample.xml`).
+More information on the MPC and ADES formats can be found in the [MPC documentation](https://minorplanetcenter.net/iau/info/MPOrbitFormat.html) and the [ADES documentation](https://minorplanetcenter.net/iau/info/ADES.html), respectively.
 
-in file `sample.obs` and showed the command `digest2 sample.obs` producing this
-output:
+For illustration purposes, we will use the MPC format file (`sample.obs`).
 
-```
-NE00030  0.15 100 100  37   0
-NE00199  0.56  98  97  17   0 (MC 2) (JFC 1)
-NE00269  0.42  18  18   3   0 (MC 9) (Hun 4) (Pho 27) (MB1 <1) (Han <1) (MB2 30) (MB3 12) (JFC 1)
+``` bash
+K16S99K 1C2022 12 25.38496508 32 36.283+17 10 35.94         21.98GV~69dEG96
+K16S99K 1C2022 12 25.39527308 32 35.635+17 10 37.27         21.72GV~69dEG96
+K16S99K 1C2022 12 25.40040208 32 35.473+17 10 37.38         21.31GV~69dEG96
 ```
 
-The column RMS gives the residual RMS from linear motion along a great circle.
-The columns Int, NEO, N22, and N18 are showing the digest2 scores in various
-orbit classes, MPC Interesting, Near Earth Object, NEOs with absolute magnitude
-(H) of 22 or less, and NEOs of H 18 or less.
+Regardless of the format, digest2 is run the same way:
 
-A digest2 score ranges from 0 to 100 like a percentage chance.  A score of
-0 means almost no chance of the object being of the indicated orbit class,
-a score of 100 means almost certainty that the object is of the indicated
-class.  For various reasons the score is not an exact probability.
+``` bash
+digest2 <file_name>
+```
 
-In this example digest2 predicts that the first two objects are almost certain
-to be NEOs.  The last one, with a NEO score of only 18 shows little chance of
-being a NEO.  The results Pho 27, MB2 30, and MB3 12 show that it is much more
-likely to have a Phocaea-like or main belt orbit.
+Replace `<file_name>` with the name of the file you want to run digest2 on. For example, to run digest2 on `sample.obs`:
 
-Orbit classes are based on orbital elements and are either known dynamic
-populations like Hungarias (Hun) or popular classifications like NEO.  The
-complete list is given below.
+```bash 
+digest2 sample.obs
+```
 
-The RMS figure is a root-mean-square of residuals in arc seconds of the
-observations against a great circle fit.  A high RMS could indicate either bad
-observations or significant great circle departure over the observation arc.
-It can thus be used as a quick check that scores are meaningful.  If the RMS
-is low, scores are meaningful.  Scores are still meaningful if the RMS is high
-due to great circle departure, but digest2 offers no way of distinguishing this
-case from one where observations are bad.
+Running the above should produce the following output:
 
-Further instructions in this file cover moving the digest2 executable to a
-more convenient location, configuration, and command line operation.
+``` bash
+Desig.    RMS  RMS' Raw NID Raw NID Raw NID Raw NID Other Possibilities
+K16S99K  0.73  0.00   0   0   9  14   3   6   1   1 (MC 13) (MB1 72) (MB2 <1) (JFC <1)
+```
+
+The RMS column provides the root-mean-square (`RMS`) value of residuals resulting from linear motion along a great circle.
+A high RMS could indicate either inaccurate observations or a significant deviation from the great circle over the observation arc.
+Therefore, it serves as a quick check to ensure the meaningfulness of scores.
+If the `RMS` value is low, the scores are considered meaningful.
+Even if the `RMS` is high due to great circle deviation, the scores still hold meaning.
+However, `digest2` cannot differentiate between cases where the high `RMS` is caused by great circle departure or poor observations.
+
+PETER: RMS' (RMS 'prime')  ...
+
+The `Int`, `NEO`, `N22`, and `N18` columns display the `digest2` scores for different orbit classes (a complete list of orbit classes is provided at the bottom of this document): MPC Interesting, Near Earth Object (NEO), NEOs with an absolute magnitude (H) of 22 or less, and NEOs of H 18 or less, respectively.
+Orbit classes are determined based on orbital elements and can be either well-known dynamic populations like Hungarias (Hun) or popular classifications like NEO.
+A `digest2` score ranges from `0` to `100`, similar to a percentage. 
+A score of `0` implies a minimal chance of the object belonging to the indicated orbit class, while a score of `100` indicates a high certainty of the object being in the indicated class. 
+However, the score is not an exact probability due to various factors.
+
+PETER: That said, tn the example above, digest2 predicts ...
+PETER: The results for ... <orbital classses> suggest ...
 
 ## Moving the executable
 
 The digest2 executable built in BUILDING.md can be moved or copied
 to a more convenient location such as a `bin` directory on your PATH.
 It still needs to find the model file and obscodes file though, and by default
-it simply looks in the current directory for these files.  The command line
+it simply looks in the current directory for these files. The command line
 option `-p <path>` specifies an alternate directory.  One fairly simple
 installation techique then is
 
@@ -74,7 +74,7 @@ installation techique then is
 Invoking digest2 without command line arguments (or with invalid arguments)
 shows this usage prompt.
 
-```
+``` bash
 Usage: digest2 [options] <obs file>    score observations in file
        digest2 [options] -             score observations from stdin
        digest2 -m <binary model file>  generate binary model from CSV
@@ -116,27 +116,25 @@ binary model file only if the csv file is updated.
 
 ## File formats
 
-Observations, whether supplied in a file or through stdin, should contain
-observations in the MPC 80 column observation format, documented at
-http://www.minorplanetcenter.net/iau/info/OpticalObs.html.
-The observations should be sorted first by designation and then by time
+Input observations must either be in [MPC 80 column format](https://minorplanetcenter.net/iau/info/MPOrbitFormat.html) or on [ADES format](https://minorplanetcenter.net/iau/info/ADES.html), supplied as either an .obs or .xml file.
+Regardless, the observations should be sorted first by designation and then by time
 of observation, and there should be at least two observations of each object.
 
-digest2.obscodes is a text file containing observatory codes in MPC format
-used at http://www.minorplanetcenter.net/iau/lists/ObsCodes.html.
+`digest2.obscodes` is a text file containing observatory codes in MPC format
+used [here](http://www.minorplanetcenter.net/iau/lists/ObsCodes.html).
 
-digest2.model.csv is a comma separated text file containing the Solar System
-model used by digest2.
+`digest2.model.csv` is a comma separated text file containing the Solar System
+model used by `digest2`.
 
-digest2.model is a binary encoding of digest2.model.csv.
+`digest2.model` is a binary encoding of `digest2.model.csv`.
 
-digest2.config, the optional configuration file, is a text file with a simple
-format.  Empty lines and lines beginning with # are ignored.  Other lines must
+`digest2.config`, the optional configuration file, is a text file with a simple
+format. Empty lines and lines beginning with # are ignored.  Other lines must
 contain either a keyword or an orbit class.
 
-MPC.config is provided as a list of the observational error allowances
-currently used by the MPC.  This file is included (along with
-digest2.model.csv) in d2model.tar.bz2.  See BUILDING.md.
+`MPC.config` is provided as a list of the observational error allowances
+currently used by the MPC.
+
 ## Configuring file locations
 
 As described above the -p command line option is useful to specify a
@@ -145,20 +143,22 @@ directory for digest2 associated files, `digest2.config`, `digest2.obscodes`,
 
 For greater control, file locations can be specified individually:
 
-	File               Command line option
-	digest2.obscodes   -o
-	digest2.model      -m
-	digest2.config     -c
+``` bash
+File               Command line option
+digest2.obscodes   -o
+digest2.model      -m
+digest2.config     -c
+``` 
 
 A configuration file is required to be present if -c is used.
 
 If you specify -p in combination with -c, -o, or -m, the path specified
 with the -c, -o, or -m option takes precedence.  That is, the path specified
-with -p is not joined with with a file name specified with -c, -o, or -m.
+with -p is not joined with a file name specified with -c, -o, or -m.
 
 The -o and -m options can also be used in a form of the digest2 command without
 input observations.  With -o, the action is to get a fresh copy of obscode data
-from the MPC web site and store it to the specified file.  With -m, the action
+from the MPC website and store it to the specified file.  With -m, the action
 is to read `digest2.model.csv` and write the binary form to the specified
 file.
 
@@ -166,79 +166,60 @@ file.
 
 Allowable keywords:
 
-    headings
-    noheadings
-    rms
-    norms
-    raw
-    noid
-    repeatable
-    random
-    obserr
-    poss
-
-Headings and the rms column can be turned off if desired.
-
-Keywords raw and noid determine the score produced as described in the
-document ALGORITHM.md.  The default is noid.  If both keywords are present,
-both scores are output.
-
-The keywords repeatable and random determine if program output is
-strictly repeatable or can be non-deterministic from one run to the next.
-The program uses a Monte Carlo method.  By default, the pseudo random
-number generator is seeded randomly.  When the keyword repeatable is
-used, it is reseeded with a constant value for each tracklet, yielding
-repeatable scores.
-
-Keyword obserr specifies the amount of observational error that the algorithm
-should allow for.  It is specified in arc seconds as in,
-
-```
-obserr=0.7
+``` bash
+headings
+noheadings
+rms
+rmsPrime
+norms
+raw
+noid
+repeatable
+random
+obserr
+poss
+useThreshold
 ```
 
-The default, if no obserr is specified, is 1.0 arc seconds.
-Obserr may be specified for individual observatory codes as in,
+PETER, please update with descriptions of the rmsPrime and useThreshold keywords.
 
+The `headings` and the `rms` columns can be turned off if desired by simply removing the keyword from the configuration file.
+
+Keywords `raw` and `noid` determine the score produced as described in [ALGORITHM.md](ALGORITHM.md).  
+The default is `noid`.  If both keywords are present, both scores are output.
+
+The keywords `repeatable` and `random` determine if program output is
+strictly repeatable or can be non-deterministic from one run to the next, for which `digest2` uses a Monte Carlo method.  
+By default, the pseudo random number generator is seeded randomly. 
+When the keyword `repeatable` is used, it is reseeded with a constant value for each tracklet, yielding repeatable scores.
+
+Keyword `obserr` specifies the amount of observational error that the algorithm should allow for.  
+It is specified in arc seconds as in,
+
+``` bash
+obserr = 0.7
 ```
-obserrF51=.3
-obserr 704 = 1
+
+The default, if no `obserr` is specified, is `1.0` arc seconds.
+`Obserr` may be specified for individual observatory codes as in,
+
+``` bash
+obserrF51 =.3
+obserr704 = 1
 ```
 
-As shown, white space is optional.
-
-The keyword poss specifies to output the "Other Possibilities" column.
+The keyword `poss` pertains to output the "Other Possibilities" column.
 By default, other possibilities are suppressed if orbit classes are
 explicitly specified.
 
-Orbit classes:
-
-    Abbr.  Long Form
-    ---    -------------
-    Int    MPC interest.
-    NEO    NEO(q < 1.3)
-    N22    NEO(H <= 22)
-    N18    NEO(H <= 18)
-    MC     Mars Crosser
-    Hun    Hungaria gr.
-    Pho    Phocaea group
-    MB1    Inner MB
-    Pal    Pallas group
-    Han    Hansa group
-    MB2    Middle MB
-    MB3    Outer MB
-    Hil    Hilda group
-    JTr    Jupiter tr.
-    JFC    Jupiter Comet
-
 Listing an orbit class limits scoring to only the listed classes.
-Other possibilities are not computed or listed.  Either abbreviations or
-long forms may be used.  In any case they must be spelled exactly as
+Other possibilities are not computed or listed. Either abbreviations or
+long forms may be used. In any case they must be spelled exactly as
 shown.
 
 Example 1:
 
-```
+``` bash
 Int
 Neo
 N22
@@ -250,16 +231,16 @@ This is equivalent to default program behavior without a config file.
 
 Example 2:
 
-```
+``` bash
 # just three
 NEO
 Hun
 JTr
 ```
 
-program output is
+The program output is:
 
-```
+```bash
 Desig.    RMS NEO Hun JTr
 NE00030  0.15 100   0   0
 NE00199  0.56  97   0   0
@@ -271,7 +252,7 @@ only these three classes and not all possible classes.
 
 Example 3:
 
-```
+```bash
 noheadings
 norms
 N22
@@ -279,7 +260,7 @@ N22
 
 output:
 
-```
+``` bash
 NE00030  37
 NE00199  18
 NE00269   3
@@ -293,17 +274,39 @@ Run `digest2 -c MPC.config sample.obs`.
 
 output:
 
-```
+``` bash
 Desig.    RMS Int NEO N22 N18 Other Possibilities
 NE00030  0.15 100 100  36   0
 NE00199  0.56  98  98  17   0 (MC 2) (JFC 1)
 NE00269  0.42  24  23   4   0 (MC 7) (Hun 3) (Pho 15) (MB1 <1) (Han <1) (MB2 41) (MB3 5) (JFC 1)
 ```
 
-The command line option -c specifies to use MPC.config as the config file.
-This file specifies obserr for selected observatories.  Included is code 291,
-the observing site for objects NE00030 and NE00269.  Notice Int and NEO scores
-on NE00269 in particular are somewhat higher than before.  The obserr settings
-can sometimes significantly affect scores.  If you are interested in emulating
-scores obtained internally at the MPC, you should use obserr settings from
+The command line option `-c` specifies to use `MPC.config` as the config file.
+This file specifies `obserr` for selected observatories.  Included is code 291,
+the observing site for objects NE00030 and NE00269. Notice Int and NEO scores
+on NE00269 in particular are somewhat higher than before. The `obserr` settings
+can sometimes significantly affect scores. If you are interested in emulating
+scores obtained internally at the MPC, you should use `obserr` settings from
 this file.
+
+## Currently supported orbit classes:
+
+``` bash
+Abbr.  Long Form
+---    -------------
+Int    MPC interest.
+NEO    NEO(q < 1.3)
+N22    NEO(H <= 22)
+N18    NEO(H <= 18)
+MC     Mars Crosser
+Hun    Hungaria gr.
+Pho    Phocaea group
+MB1    Inner MB
+Pal    Pallas group
+Han    Hansa group
+MB2    Middle MB
+MB3    Outer MB
+Hil    Hilda group
+JTr    Jupiter tr.
+JFC    Jupiter Comet
+```

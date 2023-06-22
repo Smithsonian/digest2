@@ -1,33 +1,32 @@
 # Digest2
 
-Current version: 0.19.2, updated Oct. 7, 2021 by Peter Veres.
-Changes: d2mpc.c - added band conversion for 'u', added CMOS 'B'
-
-Digest2 uses statistical ranging techniques to compute chances that an
+`digest2` uses statistical ranging techniques to compute chances that an
 object is of various orbit classes, including Near Earth Objects, or NEOs.
-Input is a file of 80 column MPC-format observations, with at least two
-observations per object.  Output is orbit class scores for each object.
+The input file can be either `.obs` (80 column MPC-format) or `xml` (ADES), with at least two
+observations per object. `digest2` will output orbit class scores for each object.
 
-* Digest2 is available on Bitbucket at https://bitbucket.org/mpcdev/digest2/.
-To download and install there are two parts, the source code and the "model,"
-Both available from the digest2
-[Downloads](https://bitbucket.org/mpcdev/digest2/downloads/) page (or on
-Bitbucket, click the Downloads icon on the left.)  The Downloads page has
-tabs labeled "Downloads" and "Tags."  The model is on the
-[Downloads](https://bitbucket.org/mpcdev/digest2/downloads/?tab=downloads) tab,
-the source code is on the
-[Tags](https://bitbucket.org/mpcdev/digest2/downloads/?tab=tags) tab.
+### Latest improvements
+Current version: 0.19.3, updated June 22, 2023 by Richard Cloete & Peter Veres.
 
-* For instructions on building the source code, see the file BUILDING.md.
+This latest update includes the ability for `digest2` to read and parse the new [ADES (xml) format](https://minorplanetcenter.net/iau/info/ADES.html), bringing with it the following advantages:
+- Improved precision: The ADES format includes the full precision of the observations, c.f. the truncated 80-column MPC format.
+- Performance: Computations using the ADES format provide 5x performance speedup.
+- Improved uncertainties: The ADES format provides new astrometric uncertainty information (rmsRA and rmsDec), which is more accurate than the estimated error values previously used (see config file).
+- The ability to process roving observer observations, which are not supported in the 80-column MPC format.
+- The ability to process satellite observations.
 
-* Further instructions on configuration and operation are in OPERATION.md.
 
-* An outline of the underlying algorithm is in ALGORITHM.md.
+### Getting started
+To get started, clone this repository and read the following files:
+* [BUILDING.md](BUILDING.md) for instructions on building the source code.
+* [OPERATION.md](OPERATION.md) for instructions on configuration and operation.
+* [ALGORITHM.md](ALGORITHM.md) for an outline of the underlying algorithm.
 
-* Digest2 is public domain.
+
+### License
+Digest2 is public domain. See [LICENSE.md](LICENSE.md) for details.
 
 ### The name "digest2"
-
 There is no known history of a digest1; this is not version 2 of a program.
 Also nothing is known about the origin or meaning of the name.
-The program name is simply digest2.
+The program name is simply `digest2`.

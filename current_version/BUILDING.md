@@ -1,22 +1,24 @@
 # Building digest2
 
-## Download
+## Download / Clone
 
-The digest2 download page is http://bitbucket.org/mpcdev/digest2/downloads.
-The page has three tabs, "Downloads," "Tags," and "Branches."  Click Tags.
-Read across the row with the latest version; on the far right are options
-"zip," "gz," "bz2."  Click one of them and your browser should download the
-source archive.  Alternatively, with a right click your browser may give you
-the option to name the archive file.  (By default the archive may be named
-with a commit hash.)
+The digest2 download page is: https://github.com/Smithsonian/digest2.
+The repository can be cloned with:
+
+        git clone https://github.com/Smithsonian/digest2.git
+
 
 ## Build
 
-In any case, you should be able to unpack the archive with a command like
-`tar -xf <filename>` on most Linux-like systems.
+If you downloaded the repository as a zip file, unpack it. On most Linux-like systems, this can be done with `unzip <filename>` or `tar -xf <filename>`.
 
-Cd into the directory created by unpacking the archive and you should find
-C source and related files.
+The directory will contain 3 subdirectories: `archive`, `current_version`, and `population`. 
+The `population` directory contains the population data used by digest2.  
+The `current_version` directory contains the latest version of the source code and a Makefile.
+
+`cd` into the `current_version` directory:
+    
+    cd current_version
 
 Type `make`, and a `digest2` executable should be built in the current
 directory.  (The Makefile is simplistic and may take minor modifications
@@ -24,30 +26,11 @@ to work on your system.)
 
 ## Model
 
-Digest2 also requires a Solar System model file.  A model file can be
-downloaded from the same download page mentioned above, but instead of the
-"Tags" tab, use the "Downloads" tab.  There should be a file `d2model.tar.bz2`.
-Download and unpack into the same directory with digest2.  You should find
-two files, `digest2.model.csv` and `MPC.config`.
+Digest2 also requires a Solar System model file.  A model file, called `digest2.model` can be
+found in the `population` directory. This file is updated periodically from the Minor Planet Center's `MPCORB.DAT` file.
+Copy the `digest2.model`, `digest2.model.csv` and `MPC.config` files to the same directory as the `digest2` executable.
 
 ## Initial program checkout
-
-With a digest2 executable and digest2.model.csv (and an Internet connection)
-you should be able to run digest2 now.  The following sample observations are
-provided as `sample.obs`.
-
-
-```
-     NE00030  C2004 09 16.15206 16 13 11.57 +20 52 23.7          21.1 Vd     291
-     NE00030  C2004 09 16.15621 16 13 11.34 +20 52 16.8          20.8 Vd     291
-     NE00030  C2004 09 16.16017 16 13 11.13 +20 52 09.6          20.7 Vd     291
-     NE00199  C2007 02 09.24234 06 08 06.06 +43 13 26.2          20.1  c     704
-     NE00199  C2007 02 09.25415 06 08 05.51 +43 13 01.7          20.1  c     704
-     NE00199  C2007 02 09.26683 06 08 04.80 +43 12 37.5          19.9  c     704
-     NE00269  C2003 01 06.51893 12 40 50.09 +18 27 46.9          21.4 Vd     291
-     NE00269  C2003 01 06.52850 12 40 50.71 +18 27 46.1          21.8 Vd     291
-     NE00269  C2003 01 06.54359 12 40 51.68 +18 27 42.5          21.9 Vd     291
-```
 
 Type "digest2 sample.obs" and you should get output similar to this:
 

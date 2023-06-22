@@ -34,7 +34,6 @@ typedef struct optical {
     xmlChar *seeing;
     xmlChar *exp;
     xmlChar *subFmt;
-
     xmlChar *sys;
     xmlChar *pos1;
     xmlChar *pos2;

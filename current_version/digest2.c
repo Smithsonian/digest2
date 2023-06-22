@@ -241,95 +241,6 @@ void eval(tracklet *tk) {
     pthread_mutex_unlock(&mStage);
 }
 
-void fmtScores_rich(tracklet *tk) {
-    // test any --limit
-    perClass *cl;
-    if (limitSpec) {
-        cl = tk->class + limitClass;
-        if ((int) ((limitRaw ? cl->rawScore : cl->noIdScore) + .5) < limit) {
-            // no output if below limit
-            *outputLine = 0;
-            return;
-        }
-    }
-
-    char message[100] = "";
-
-    char rmsStr[100];
-    char rmsprime[100];
-    char rawScore[100];
-    char noIdScore[100];
-    char pScoreStr[100];
-
-    if(tk->isAdes) {
-        strcat(message, strtok(tk->desig, ""));
-    }
-    else {
-        //remove the first 5 characters from the desig:
-        char *desig = tk->desig + 5;
-        strcat(message, strtok(desig, ""));
-    }
-
-    if (rms) {
-        snprintf(rmsStr, sizeof(rmsStr), "%5.2f", tk->rms);
-            strcat(message, "");
-            strcat(message, rmsStr);
-    }
-    if (rmsPrime) {
-        snprintf(rmsprime, sizeof(rmsprime), "%5.2f", tk->rmsPrime);
-        strcat(message, "");
-        strcat(message, rmsprime);
-    }
-    int c;
-    if (classPossible) {
-        // specified columns first
-        for (c = 0; c < nClassColumns; c++) {
-            cl = tk->class + classColumn[c];
-            if (raw)
-                snprintf(rawScore, sizeof(rawScore), "%3.0f", cl->rawScore);
-                strcat(message, "");
-                strcat(message, rawScore);
-            if (noid)
-                snprintf(noIdScore, sizeof(noIdScore), "%3.0f", cl->noIdScore);
-                strcat(message, "");
-                strcat(message, noIdScore);
-        }
-        // then other possibilities
-        for (c = 0; c < D2CLASSES; c++) {
-            int cc;
-            for (cc = 0; cc < nClassColumns && classColumn[cc] != c; cc++);
-            if (cc < nClassColumns)
-                continue;               // already in a column
-            // else output if possible
-            cl = tk->class + c;
-            double pScore = noid ? cl->noIdScore : cl->rawScore;
-            if (pScore > .5)
-                snprintf(pScoreStr, sizeof(pScoreStr), " (%s %.0f)", classAbbr[c], pScore);
-            else if (pScore > 0)
-                snprintf(pScoreStr, sizeof(pScoreStr), " (%s <1)", classAbbr[c]);
-            strcat(message, "");
-            strcat(message, pScoreStr);
-        }
-
-    } else {
-        // other possibilities not computed.
-        for (c = 0, cl = tk->class; c < nClassCompute; c++, cl++) {
-            if (raw)
-                snprintf(rawScore, sizeof(rawScore), "%3.0f", cl->rawScore);
-                strcat(message, "  ");
-                strcat(message, rawScore);
-            if (noid)
-                snprintf(noIdScore, sizeof(noIdScore), "%3.0f", cl->noIdScore);
-                strcat(message, "  ");
-                strcat(message, noIdScore);
-        }
-    }
-
-    strcat(message, " \n");
-    printf("%s", message);
-}
-
-//RICH: NO LONGER USED
 void fmtScores(tracklet *tk) {
     // test any --limit
     perClass *cl;
@@ -432,14 +343,12 @@ void *scoreStaged(void *id) {
 
         score(tk);
         fmtScores(tk);
-//        fmtScores_rich(tk);
         ringAdd(tk);
     }
     return NULL;
 }
 
 void readAdes(char *fnObs) {
-
 
     tracklet *tk = parse_ades(fnObs);
     tk->isAdes = 1;
@@ -694,10 +603,11 @@ specify file to process on command line
 */
 int main(int argc, char **argv) {
 
+
+
     // sets up globals and terminates on error
     char *fnObs = parseCl(argc, argv);
     char *extension = strrchr(fnObs, '.') + 1;
-//    xml = strcmp(extension, "xml");
 
     setup(fnObs);
 

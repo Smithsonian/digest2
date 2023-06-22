@@ -71,9 +71,7 @@ int hToBin(double h)
 // any of: q < 1.3, e > .5, i > 40, or Q > 10
 _Bool isMpcint(double q, double e, double i, double h)
 {
-  return q < 1.3 || e >= .5 || i >= 40. || q * (1. + e) / (1. - e) > 10.;
-//    return  e >= .95;
-
+    return q < 1.3 || e >= .5 || i >= 40. || q * (1. + e) / (1. - e) > 10.;
 }
 
 // 'NEO' objects
@@ -206,6 +204,7 @@ _Bool isJFC(double q, double e, double i, double h)
   return t < 3 && t > 2;
 }
 
+  
 // 12 characters looks nice, 13 is ok.
 // anything over 13 is truncated at run time.
 char *classHeading[D2CLASSES] = {

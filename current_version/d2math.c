@@ -337,37 +337,35 @@ void updateRMSValues(double *rmsRA, double *rmsDec, double *errorFromConfig) {
             if (*rmsRA > maxThreshold) *rmsRA = maxThreshold;
             if (*rmsDec > maxThreshold) *rmsDec = maxThreshold;
 
+            if (*errorFromConfig > *rmsRA ) *rmsRA  = *errorFromConfig ;
+            if (*errorFromConfig > *rmsDec ) *rmsDec  = *errorFromConfig ;
+
         }
     }
-
 }
 
-void offsetMotionVector(tracklet * tk, int rx, int dx)
+void offsetMotionVector(tracklet *tk, int rx, int dx)
 {
-    // solve unit vectors
     double v[3];
     observation *obsp = tk->obsPair;
 
     for (int i = 0; i < 2; i++, obsp++) {
 
-        double dec = 0;
-        double ra = 0;
-        double cosdec = 0;
         double errorFromConfig = tk->obsErr[i];
+        double dec, cosdec, ra;
 
-        // If we are using ADES, we want to use the rmsRA and rmsDec values
-        if(tk->isAdes){
+        if (tk->isAdes) {
             double rmsRA = tk->obsPair[i].rmsRA;
             double rmsDec = tk->obsPair[i].rmsDec;
             updateRMSValues(&rmsRA, &rmsDec, &errorFromConfig);
-            dec = obsp->dec + dx * rmsDec * .5;
-            ra = obsp->ra + rx * rmsRA * .5 * cosdec;
-        }else{ // Otherwise, we are using MPC obs and continue as normal
-            dec = obsp->dec + dx * tk->obsErr[i] * .5;
-            ra = obsp->ra + rx * tk->obsErr[i] * .5 * cosdec;
+            dec = obsp->dec + dx * rmsDec * 0.5;
+            cosdec = cos(dec);
+            ra = obsp->ra + rx * rmsRA * 0.5 * cosdec;
+        } else {
+            dec = obsp->dec + dx * errorFromConfig * 0.5;
+            cosdec = cos(dec);
+            ra = obsp->ra + rx * errorFromConfig * 0.5 * cosdec;
         }
-
-        cosdec = cos(dec);
 
         v[0] = cos(ra) * cosdec;
         v[1] = sin(ra) * cosdec;
@@ -773,8 +771,6 @@ void gcRes(gcfparam *gcf, double res[gcf->nObs][2]) {
     for (int i = 0; i < nObs; i++) {
         rsc[i][0] = gcf->r0 + gcf->rr * gcf->ntime[i];
         rsc[i][1] = gcf->d0 + gcf->dr * gcf->ntime[i];
-//        printf("The value of rsc[i][0] is: %f\n", rsc[i][0]);
-//        printf("The value of rsc[i][0] is: %f\n", rsc[i][1]);
     }
 
     // residuals are computed on rotated-and-derotated observed to
@@ -842,7 +838,6 @@ double gcRmsPrimeAdes(tracklet *tk) {
     double rmsDec = 0.0;
 
     for (int i = 0; i < tk->lines; i++) {
-        // TODO Peter check
         rmsDec = tk->olist[i].rmsDec / arcsecrad;
         rmsRA = tk->olist[i].rmsRA / arcsecrad;
         s += rmsRA * rmsRA + rmsDec * rmsDec;
@@ -1005,9 +1000,11 @@ void twoObs(tracklet *tk, double rms[]) {
     for (int i = 0; i < nObs; i++, obsp++) {
         if (obsp->site != olist->site)
             allSame = 0;
+
         if (siteTable[obsp->site].rhoCosPhi == 0 &&
-            siteTable[obsp->site].rhoSinPhi == 0)
+            siteTable[obsp->site].rhoSinPhi == 0){
             spaceBased = 1;
+        }
     }
 
     // find observations near 17th and 83rd percentile.
@@ -1152,7 +1149,6 @@ void score(tracklet *tk) {
     for (int i = 0; i < 2; i++, obsp++) {
         site *sitep = siteTable + obsp->site;
         tk->obsErr[i] = clipErr(rms[i], sitep);
-
         double sun_earth[3];
         se2000(obsp->mjd, sun_earth, &tk->soe, &tk->coe);
 

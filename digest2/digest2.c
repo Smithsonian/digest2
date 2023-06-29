@@ -625,16 +625,13 @@ int main(int argc, char** argv) {
         setup(fnObs);
 
         _Bool xml = (extension != NULL && strcmp(extension, "xml") == 0);
-        _Bool obs = (extension != NULL && strcmp(extension, "obs") == 0);
 
-        if (xml) {
+       if (xml) {
             readAdes(fnObs);
-        } else if (obs) {
-            readMPC80(fnObs);
         } else {
-            // Handle cases where no ".xml" or ".obs" extension is present
-            printf("No '.xml' or '.obs' extension detected. Please provide a file with either a .obs or .xml extension. Exiting.\n");
+            readMPC80(fnObs);
         }
+
     }
 
     return 0;

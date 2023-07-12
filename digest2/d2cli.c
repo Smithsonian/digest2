@@ -41,7 +41,7 @@ _Bool cpuSpec = 0;
 _Bool limitSpec = 0;
 _Bool classPossible;
 _Bool raw, noid;
-_Bool headings, rms, repeatable, rmsPrime, useThreshold;
+_Bool headings, rms, repeatable, rmsPrime, noThreshold;
 int nClassCompute;
 int nClassColumns;
 int classCompute[D2CLASSES];
@@ -207,8 +207,8 @@ void readConfig() {
             rmsPrime = 1;
             continue;
         }
-        if (!strcmp(line, "useThreshold")) {
-            useThreshold = 1;
+        if (!strcmp(line, "noThreshold")) {
+            noThreshold = 1;
             continue;
         }
         if (!strcmp(line, "norms")) {
@@ -360,7 +360,7 @@ Config file keywords:\n\
    noheadings\n\
    rms\n\
    rmsPrim\n\
-   useThreshold\n\
+   noThreshold\n\
    norms\n\
    raw\n\
    noid\n\

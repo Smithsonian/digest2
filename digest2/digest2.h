@@ -180,7 +180,7 @@ extern _Bool modelSpec;
 extern _Bool ocdSpec;
 extern _Bool classPossible;
 extern _Bool raw, noid;
-extern _Bool headings, rms, repeatable, rmsPrime, useThreshold;
+extern _Bool headings, rms, repeatable, rmsPrime, noThreshold;
 extern _Bool limitSpec;
 extern _Bool limitRaw;
 extern int nClassCompute;

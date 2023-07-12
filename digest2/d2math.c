@@ -324,7 +324,11 @@ void updateRMSValues(double *rmsRA, double *rmsDec, double *errorFromConfig) {
         if (!*rmsRA) *rmsRA = *rmsDec;
         if (!*rmsDec) *rmsDec = *rmsRA;
 
-        if(useThreshold){
+	if(noThreshold){
+	  if (*errorFromConfig > *rmsRA ) *rmsRA  = *errorFromConfig ;
+	  if (*errorFromConfig > *rmsDec ) *rmsDec  = *errorFromConfig ;
+	}
+        else{
 
             double minThreshold = 0.7 * (*errorFromConfig);
             double maxThreshold = 5 * (*errorFromConfig);
@@ -836,11 +840,25 @@ double gcRmsPrimeAdes(tracklet *tk) {
     double s = 0;
     double rmsRA = 0.0;
     double rmsDec = 0.0;
-
+    
     for (int i = 0; i < tk->lines; i++) {
         rmsDec = tk->olist[i].rmsDec / arcsecrad;
         rmsRA = tk->olist[i].rmsRA / arcsecrad;
+	if(noThreshold){
         s += rmsRA * rmsRA + rmsDec * rmsDec;
+        }
+        else{
+	   double errorFromConfig = tk->obsErr[0]/arcsecrad;
+	   if (!errorFromConfig) errorFromConfig = 1.0;
+        double minThreshold = 0.7 * (errorFromConfig);
+        double maxThreshold = 5 * (errorFromConfig);
+        if (rmsRA < minThreshold) rmsRA = minThreshold;
+        if (rmsDec < minThreshold) rmsDec = minThreshold;
+        if (rmsRA > maxThreshold) rmsRA = maxThreshold;
+        if (rmsDec > maxThreshold) rmsDec = maxThreshold;
+        s += rmsRA * rmsRA + rmsDec * rmsDec;
+        }
+        
     }
     return sqrt(s / tk->lines);
 }

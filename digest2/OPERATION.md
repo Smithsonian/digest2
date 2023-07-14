@@ -6,17 +6,20 @@ Digest2 version 0.19.3
 Having built digest2 (see [BUILDING.md](BUILDING.md), you should have a `digest2` executable in the current directory.
 Make sure that you also have the `digest2.model.csv`, `digest2.model`, and `MPC.config` files in the current directory.
 If you have internet connection `digest2` will download the latest observatory parallax data from the Minor Planet Center.
-If no internet connection is available, you will need to download the `obscode.dat` file from the Minor Planet Center and place it in the current directory with the name `digest2.obscodes`.
+If no internet connection is available, you will need to download the `obscode.dat` file from the Minor Planet Center and 
+place it in the current directory with the name `digest2.obscodes`.
 
-You should now be able to run digest2. For this, we have provided two sample files: one in MPC format (`sample.obs`), and one in ADES format (`sample.xml`).
-More information on the MPC and ADES formats can be found in the [MPC documentation](https://minorplanetcenter.net/iau/info/MPOrbitFormat.html) and the [ADES documentation](https://minorplanetcenter.net/iau/info/ADES.html), respectively.
+You should now be able to run digest2. For this, we have provided two sample files: one in MPC format (`sample.obs`), and one 
+in ADES format (`sample.xml`). More information on the MPC and ADES formats can be found in the 
+[MPC documentation](https://minorplanetcenter.net/iau/info/MPOrbitFormat.html) and the
+[ADES documentation](https://minorplanetcenter.net/iau/info/ADES.html), respectively.
 
 For illustration purposes, we will use the MPC format file (`sample.obs`).
 
 ``` bash
-K16S99K 1C2022 12 25.38496508 32 36.283+17 10 35.94         21.98GV~69dEG96
-K16S99K 1C2022 12 25.39527308 32 35.635+17 10 37.27         21.72GV~69dEG96
-K16S99K 1C2022 12 25.40040208 32 35.473+17 10 37.38         21.31GV~69dEG96
+K16S99K 1C2022 12 25.38496508 32 36.283+17 10 35.94         21.98GV     G96
+K16S99K 1C2022 12 25.39527308 32 35.635+17 10 37.27         21.72GV     G96
+K16S99K 1C2022 12 25.40040208 32 35.473+17 10 37.38         21.31GV     G96
 ```
 
 Regardless of the format, digest2 is run the same way:
@@ -39,22 +42,29 @@ K16S99K  0.73  0.00   0   0   9  14   3   6   1   1 (MC 13) (MB1 72) (MB2 <1) (J
 ```
 
 The RMS column provides the root-mean-square (`RMS`) value of residuals resulting from linear motion along a great circle.
-A high RMS could indicate either inaccurate observations or a significant deviation from the great circle over the observation arc.
+A high RMS could indicate either inaccurate observations or a significant deviation from the great circle over the observation 
+arc.
 Therefore, it serves as a quick check to ensure the meaningfulness of scores.
 If the `RMS` value is low, the scores are considered meaningful.
 Even if the `RMS` is high due to great circle deviation, the scores still hold meaning.
 However, `digest2` cannot differentiate between cases where the high `RMS` is caused by great circle departure or poor observations.
 
-PETER: RMS' (RMS 'prime')  ...
+There is an optional keyword `rmsPrime`. When used, the output will have a column with the header `RMS'`. rmsPrime denotes the RMS computed from 
+the user-submitted astrometric uncertainties in ADES input file. Comparison of RMS and RMSPrime gives potential hints for in-tracklet curvature,
+ if the great-circle RMS is much larger then rmsPrime. The positive curvature is likely for nearby objects and only if the user-submitted
+  uncertainties are reasonable. False-positive curvature is likely when the uncertainties are severly underestimated.
+  If uncertainties are not provided, `RMS'` is zero.
 
-The `Int`, `NEO`, `N22`, and `N18` columns display the `digest2` scores for different orbit classes (a complete list of orbit classes is provided at the bottom of this document): MPC Interesting, Near Earth Object (NEO), NEOs with an absolute magnitude (H) of 22 or less, and NEOs of H 18 or less, respectively.
-Orbit classes are determined based on orbital elements and can be either well-known dynamic populations like Hungarias (Hun) or popular classifications like NEO.
+The `Int`, `NEO`, `N22`, and `N18` columns display the `digest2` scores for different orbit classes (a complete list of orbit classes is provided 
+at the bottom of this document): MPC Interesting, Near Earth Object (NEO), NEOs with an absolute magnitude (H) of 22 or less, and NEOs of H 18 or less,
+respectively.
+Orbit classes are determined based on orbital elements and can be either well-known dynamic populations like Hungarias (Hun) or popular classifications
+like NEO.
 A `digest2` score ranges from `0` to `100`, similar to a percentage. 
-A score of `0` implies a minimal chance of the object belonging to the indicated orbit class, while a score of `100` indicates a high certainty of the object being in the indicated class. 
-However, the score is not an exact probability due to various factors.
+A score of `0` implies a minimal chance of the object belonging to the indicated orbit class, while a score of `100` indicates a high certainty
+of the object being in the indicated class. However, the score is not an exact probability due to various factors.
 
-PETER: That said, tn the example above, digest2 predicts ...
-PETER: The results for ... <orbital classses> suggest ...
+The result above shows the higest score for the MB1 (inner main belt) orbit category. `RMS'` is zero because there aren't any uncertainties provided.
 
 ## Moving the executable
 
@@ -116,9 +126,13 @@ binary model file only if the csv file is updated.
 
 ## File formats
 
-Input observations must either be in [MPC 80 column format](https://minorplanetcenter.net/iau/info/MPOrbitFormat.html) or on [ADES format](https://minorplanetcenter.net/iau/info/ADES.html), supplied as either an .obs or .xml file.
+Input observations must either be in [MPC 80 column format](https://minorplanetcenter.net/iau/info/MPOrbitFormat.html)
+or on [ADES format](https://minorplanetcenter.net/iau/info/ADES.html), supplied as either an .obs or .xml file.
 Regardless, the observations should be sorted first by designation and then by time
 of observation, and there should be at least two observations of each object.
+
+The xml ADES input must start with `<?xml` and the file extension must be .xml
+Other type of suffix or non-suffix input files are treated as MPC80 column format.
 
 `digest2.obscodes` is a text file containing observatory codes in MPC format
 used [here](http://www.minorplanetcenter.net/iau/lists/ObsCodes.html).
@@ -126,7 +140,8 @@ used [here](http://www.minorplanetcenter.net/iau/lists/ObsCodes.html).
 `digest2.model.csv` is a comma separated text file containing the Solar System
 model used by `digest2`.
 
-`digest2.model` is a binary encoding of `digest2.model.csv`.
+`digest2.model` is a binary encoding of `digest2.model.csv`. This file is created
+by executing `./digest -c digest2.model.csv`
 
 `digest2.config`, the optional configuration file, is a text file with a simple
 format. Empty lines and lines beginning with # are ignored.  Other lines must
@@ -178,15 +193,28 @@ repeatable
 random
 obserr
 poss
-useThreshold
+noThreshold
 ```
 
-PETER, please update with descriptions of the rmsPrime and useThreshold keywords.
 
 The `headings` and the `rms` columns can be turned off if desired by simply removing the keyword from the configuration file.
 
 Keywords `raw` and `noid` determine the score produced as described in [ALGORITHM.md](ALGORITHM.md).  
 The default is `noid`.  If both keywords are present, both scores are output.
+
+Keyword `rms` returns great-circle RMS of the tracklet, if there are more than 2 detections per tracklet.
+
+Keyword `rmsPrime` returns the RMS from the user-submitted uncertainties in ADES (XML) format.
+
+Keyword `noThreshold` is an optional keyword that allows user to accept reported astrometric uncertainties as-is. 
+The default functionality of digest2 sets floor and ceiling for the ADES-provided uncertainties. If the uncertainty
+is less than the floor, it is set to floor; if it is larger than the ceiling, it is set to the ceiling value.
+The floor and the ceiling values are set to 0.7 and 5-times the mean (expected) uncertainty for the observatory
+code as it is provided in the configuration file. If the observary is not present in the configuration file,
+default value of 1.0" is used. Thresholds are used by default to avoid severly underestimated or overestimated
+uncertainty values that would affect the resulting digest2 score as well as the `RMS'`. However, in case
+the reported uncertainties are trusted, one could use the `noThreshold` keyword that would accept user-supplied
+astrometric uncertainties.
 
 The keywords `repeatable` and `random` determine if program output is
 strictly repeatable or can be non-deterministic from one run to the next, for which `digest2` uses a Monte Carlo method.  
@@ -288,6 +316,19 @@ on NE00269 in particular are somewhat higher than before. The `obserr` settings
 can sometimes significantly affect scores. If you are interested in emulating
 scores obtained internally at the MPC, you should use `obserr` settings from
 this file.
+
+Example 5:
+
+Input provided in a form of standard input (stdin).
+
+Run `cat sample.obs|./digest2 -`
+
+or
+
+Run `cat sample.xml|./digest2 - -c MPC.config`
+
+Note that the dash is used instead of the filename.
+
 
 ## Currently supported orbit classes:
 

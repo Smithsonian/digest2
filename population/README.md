@@ -6,7 +6,7 @@ The population directory contains:
 
 1) archive dir. with previous versions of the files
 
-2) MPC.config - list of XXX observatory codes with mean
+2) MPC.config - list of 140 observatory codes with mean
 (expected) astrometric uncertainties and a few config.
 keywords
 

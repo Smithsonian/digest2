@@ -130,12 +130,96 @@ void continueInvalid(tracklet *tk) {
     tk->lines++;
 }
 
+void fmtScores(tracklet *tk) {
+    // test any --limit
+    perClass *cl;
+    if (limitSpec) {
+        cl = tk->class + limitClass;
+        if ((int) ((limitRaw ? cl->rawScore : cl->noIdScore) + .5) < limit) {
+            // no output if below limit
+            *outputLine = 0;
+            return;
+        }
+    }
+    // build line for atomic write and print results.
+    int len = 0;
+    outputLineSize = outputLineSize + 10;
+    if (tk->isAdes) {
+        len = snprintf(outputLine, outputLineSize, "%s", tk->desig);
+    } else {
+        len = snprintf(outputLine, outputLineSize, "%s", tk->desig + 5);
+    }
+    if (rms) {
+        // we expect 6 new bytes.  more than that means field overflow
+        if (snprintf
+                    (outputLine + len, outputLineSize - len, " %5.2f", tk->rms) != 6)
+            strcpy(outputLine + len, " **.**");
+        len += 6;
+    }
+    if (rmsPrime) {
+        // we expect 6 new bytes.  more than that means field overflow
+        if (snprintf
+                    (outputLine + len, outputLineSize - len, " %5.2f", tk->rmsPrime) != 6)
+            strcpy(outputLine + len, " **.**");
+        len += 6;
+    }
+
+    int c;
+    if (classPossible) {
+        // specified columns first
+        for (c = 0; c < nClassColumns; c++) {
+            cl = tk->class + classColumn[c];
+            if (raw)
+                len +=
+                        snprintf(outputLine + len,
+                                 outputLineSize - len, " %3.0f", cl->rawScore);
+            if (noid)
+                len +=
+                        snprintf(outputLine + len,
+                                 outputLineSize - len, " %3.0f", cl->noIdScore);
+        }
+        // then other possibilities
+        for (c = 0; c < D2CLASSES; c++) {
+            int cc;
+            for (cc = 0; cc < nClassColumns && classColumn[cc] != c; cc++);
+            if (cc < nClassColumns)
+                continue;               // already in a column
+            // else output if possible
+            cl = tk->class + c;
+            double pScore = noid ? cl->noIdScore : cl->rawScore;
+            if (pScore > .5)
+                len +=
+                        snprintf(outputLine + len,
+                                 outputLineSize - len, " (%s %.0f)", classAbbr[c], pScore);
+            else if (pScore > 0)
+                len +=
+                        snprintf(outputLine + len,
+                                 outputLineSize - len, " (%s <1)", classAbbr[c]);
+
+        }
+    } else {
+        // other possibilities not computed.
+        for (c = 0, cl = tk->class; c < nClassCompute; c++, cl++) {
+            if (raw)
+                len +=
+                        snprintf(outputLine + len,
+                                 outputLineSize - len, " %3.0f", cl->rawScore);
+            if (noid)
+                len +=
+                        snprintf(outputLine + len,
+                                 outputLineSize - len, " %3.0f", cl->noIdScore);
+        }
+    }
+}
+
 // ringAdd is called when a tracklet is completed.  it outputs a result
 // to stdout and recycles the tracklet struct by returning it to the ring.
 // note the global variable outputLine is a required input.
 void ringAdd(tracklet *tk) {
     pthread_mutex_lock(&mRing);
-    // puts needs to be in mutex here because it is not thread safe
+    // The formatting need to be in the mutex as outputLine is global
+    fmtScores(tk);
+    // puts needs to be in mutex too because it is not thread safe
     if (*outputLine)              // empty line means --limit
         puts(outputLine);
     ring[(ringNext + ringFree) % cores] = tk;
@@ -241,88 +325,6 @@ void eval(tracklet *tk) {
     pthread_mutex_unlock(&mStage);
 }
 
-void fmtScores(tracklet *tk) {
-    // test any --limit
-    perClass *cl;
-    if (limitSpec) {
-        cl = tk->class + limitClass;
-        if ((int) ((limitRaw ? cl->rawScore : cl->noIdScore) + .5) < limit) {
-            // no output if below limit
-            *outputLine = 0;
-            return;
-        }
-    }
-    // build line for atomic write and print results.
-    int len = 0;
-    outputLineSize = outputLineSize + 10;
-    if (tk->isAdes) {
-        len = snprintf(outputLine, outputLineSize, "%s", tk->desig);
-    } else {
-        len = snprintf(outputLine, outputLineSize, "%s", tk->desig + 5);
-    }
-    if (rms) {
-        // we expect 6 new bytes.  more than that means field overflow
-        if (snprintf
-                    (outputLine + len, outputLineSize - len, " %5.2f", tk->rms) != 6)
-            strcpy(outputLine + len, " **.**");
-        len += 6;
-    }
-    if (rmsPrime) {
-        // we expect 6 new bytes.  more than that means field overflow
-        if (snprintf
-                    (outputLine + len, outputLineSize - len, " %5.2f", tk->rmsPrime) != 6)
-            strcpy(outputLine + len, " **.**");
-        len += 6;
-    }
-
-    int c;
-    if (classPossible) {
-        // specified columns first
-        for (c = 0; c < nClassColumns; c++) {
-            cl = tk->class + classColumn[c];
-            if (raw)
-                len +=
-                        snprintf(outputLine + len,
-                                 outputLineSize - len, " %3.0f", cl->rawScore);
-            if (noid)
-                len +=
-                        snprintf(outputLine + len,
-                                 outputLineSize - len, " %3.0f", cl->noIdScore);
-        }
-        // then other possibilities
-        for (c = 0; c < D2CLASSES; c++) {
-            int cc;
-            for (cc = 0; cc < nClassColumns && classColumn[cc] != c; cc++);
-            if (cc < nClassColumns)
-                continue;               // already in a column
-            // else output if possible
-            cl = tk->class + c;
-            double pScore = noid ? cl->noIdScore : cl->rawScore;
-            if (pScore > .5)
-                len +=
-                        snprintf(outputLine + len,
-                                 outputLineSize - len, " (%s %.0f)", classAbbr[c], pScore);
-            else if (pScore > 0)
-                len +=
-                        snprintf(outputLine + len,
-                                 outputLineSize - len, " (%s <1)", classAbbr[c]);
-
-        }
-    } else {
-        // other possibilities not computed.
-        for (c = 0, cl = tk->class; c < nClassCompute; c++, cl++) {
-            if (raw)
-                len +=
-                        snprintf(outputLine + len,
-                                 outputLineSize - len, " %3.0f", cl->rawScore);
-            if (noid)
-                len +=
-                        snprintf(outputLine + len,
-                                 outputLineSize - len, " %3.0f", cl->noIdScore);
-        }
-    }
-}
-
 void *scoreStaged(void *id) {
     while (1) {
         pthread_mutex_lock(&mStage);
@@ -342,7 +344,6 @@ void *scoreStaged(void *id) {
             tk->rand64 = 3;
 
         score(tk);
-        fmtScores(tk);
         ringAdd(tk);
     }
     return NULL;

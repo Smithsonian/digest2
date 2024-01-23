@@ -6,7 +6,7 @@ The input file can be either `.obs` (80 column MPC-format) or `.xml` (ADES), wit
 observations per object. `digest2` will output orbit class scores for each object.
 
 ### Latest improvements - current version 0.19.3
-Jan 23, 2024 update by John Fairlamb: digest2.c bug fix
+Jan 23, 2024 update by John Fairlamb: digest2.c bug fix, 3 obscodes added to the config file, new obscode.dat file, new population model
 Previos update: 2023 by Richard Cloete & Peter Veres.
 
 This latest update includes the ability for `digest2` to read and parse the new [ADES (xml) format]

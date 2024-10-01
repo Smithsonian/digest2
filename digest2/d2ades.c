@@ -264,7 +264,7 @@ tracklet *parse_ades(const char *filepath) {
     }
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(doc);
-    xmlXPathObjectPtr optical_nodes = xmlXPathEvalExpression("//ades/obsBlock/obsData/optical", xpathCtx);
+    xmlXPathObjectPtr optical_nodes = xmlXPathEvalExpression("//optical", xpathCtx);
 
     if (optical_nodes == NULL) {
         fprintf(stderr, "Error: Nothing found...");

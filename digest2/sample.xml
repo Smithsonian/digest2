@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ades version="2017">
-  <obsBlock>
-    <obsData>
       <optical>
         <provID>2016 SK99</provID>
         <trkSub>C8QY322</trkSub>
@@ -77,6 +75,4 @@
         <ref>MPS  1726996</ref>
         <subFmt>A17</subFmt>
       </optical>
-    </obsData>
-  </obsBlock>
 </ades>

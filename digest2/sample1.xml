@@ -1,5 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <ades version="2017">
+<obsBlock>
+<obsData>
 <optical>
 <provID>2023 MO1</provID>
 <trkSub>P11GiqT</trkSub>
@@ -84,4 +86,6 @@
 <ref>MPEC 2023-M77</ref>
 <subFmt>A17</subFmt>
 </optical>
+</obsData>
+</obsBlock>
 </ades>

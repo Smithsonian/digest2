@@ -198,9 +198,9 @@ _Bool processOptical(opticalPtr optical, observation *obsp) {
 
 
 
-        obsp->earth_observer[0] = strtod((char *) optical->pos1, NULL);
-        obsp->earth_observer[1] = strtod((char *) optical->pos2, NULL);
-        obsp->earth_observer[2] = strtod((char *) optical->pos3, NULL);
+        obsp->earth_observer[0] = x;
+        obsp->earth_observer[1] = y;
+        obsp->earth_observer[2] = z;
         obsp->spacebased = 1;
     }
 
@@ -264,7 +264,7 @@ tracklet *parse_ades(const char *filepath) {
     }
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(doc);
-    xmlXPathObjectPtr optical_nodes = xmlXPathEvalExpression("//ades/optical", xpathCtx);
+    xmlXPathObjectPtr optical_nodes = xmlXPathEvalExpression("//optical", xpathCtx);
 
     if (optical_nodes == NULL) {
         fprintf(stderr, "Error: Nothing found...");

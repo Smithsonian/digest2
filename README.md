@@ -1,3 +1,11 @@
+# ⚠️ DEPRECATED — This repository has moved
+
+Following the announcements in the [Editorial MPEC 2026-E23](https://www.minorplanetcenter.net/mpec/K26/K26E23.html) and the [February 2026 Newsletter](https://minorplanetcenter.net/media/newsletters/MPC_Newsletter_Feb2026.pdf), as of May 1st, 2026, this repository is deprecated in favor of [Smithsonian/mpc-public](https://github.com/Smithsonian/mpc-public).
+
+Please use the [digest2 directory in mpc-public](https://github.com/Smithsonian/mpc-public/tree/main/digest2) for the maintained code and future updates.
+
+---
+
 # digest2
 
 last update: July 13, 2023 by P. Veres
